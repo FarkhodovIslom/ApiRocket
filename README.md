@@ -1,6 +1,5 @@
 # 🚀 ApiRocket - Telegram HTTP Request Bot
 
-![ApiRocket Screenshot](https://i.imgur.com/5jXKz7Q.png)
 
 Send HTTP requests at rocket speed right from Telegram!
 
@@ -81,15 +80,6 @@ apirocket-bot/
 └── README.md
 ```
 
-## 🌟 Examples
-
-### GET Request
-
-![GET Request Example](https://i.imgur.com/8F3XaVg.png =400x)
-
-### POST Request with JSON
-
-![POST Request Example](https://i.imgur.com/5Gpz9Kd.png =400x)
 
 ## 🤝 Contributing
 
