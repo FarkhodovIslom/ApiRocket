@@ -40,8 +40,8 @@ DELETE https://api.example.com/users/42
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/apirocket-bot.git
-cd apirocket-bot
+git clone https://github.com/FarkhodovIslom/ApiRocket-bot
+cd ApiRocket-bot
 ```
 
 Install dependencies:
@@ -71,7 +71,7 @@ npm run dev
 ## 🧩 Project Structure
 
 ```text
-apirocket-bot/
+ApiRocket-bot/
 ├── controllers/       # Command handlers
 ├── services/          # HTTP request logic
 ├── .env               # Configuration

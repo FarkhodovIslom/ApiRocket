@@ -83,15 +83,72 @@ bot.on('text',  async (ctx) => {
                 ctx.session.step = 'ready';
                 showFinalMenu(ctx);
             } else {
-
+                ctx.session.step = 'body';
+                ctx.reply(
+                    `📝 *${ctx.session.method}* request to:\n\`${text}\`\n\n` +
+                    '💾 Send Body (JSON) or click "Skip":',
+                    {
+                        parse_mode: 'Markdown',
+                        ...Markup.inlineKeyboard([
+                            [Markup.button.callback('⏭️ Skip', 'skip_body')]
+                        ])
+                    }
+                );
             }
-        } catch (error) {}
+        } catch (error) {
+            ctx.reply('❌ Incorrect URL! Try again.');
+        }
+    } else if (ctx.session.step === 'body') {
+        try {
+            JSON.parse(text);
+            ctx.session.body = text;
+            ctx.session.step = 'ready';
+            showFinalMenu(ctx);
+        } catch (error) {
+            ctx.reply('❌ Incorrect URL! Try again.')
+        }
+    } else if (ctx.session.step === 'headers') {
+        try {
+            const headers: Record<string, string> = {};
+            const lines = text.split('\n');
+
+            for (const line of lines) {
+                const [key, ...valueParts] = line.split(':');
+                if (key && valueParts.length > 0) {
+                    headers[key.trim()] = valueParts.join(':').trim();
+                }
+            }
+
+            ctx.session.headers = { ...ctx.session.headers, ...headers };
+            ctx.session.step = 'ready';
+            showFinalMenu(ctx);
+        } catch (error) {
+            ctx.reply('❌ Incorrect headers format! Use "key: value" format');
+        }
     }
-})
+});
+
+// Skipping body
+bot.action('skip_body', (ctx) => {
+    ctx.session.step = 'ready';
+    showFinalMenu(ctx)
+});
 
 
+// Adding headers
+bot.action('add_headers', (ctx) => {
+    ctx.session.step = 'headers';
+    ctx.editMessageText(
+        '📋 Send headers in the format:\n\n' +
+        '```\n' +
+        'Content-type: application/json\n' +
+        '```',
+        {parse_mode: "Markdown"}
+    );
+});
 
 
+// Sending requests
 
 
 
