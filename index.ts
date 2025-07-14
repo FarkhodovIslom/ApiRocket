@@ -149,14 +149,138 @@ bot.action('add_headers', (ctx) => {
 
 
 // Sending requests
+bot.action('send_request', async (ctx) => {
+    const { method, url, headers, body } = ctx.session;
+
+    if (method || !url) {
+        ctx.reply('❌ Fill in all fields!');
+        return;
+    }
+
+    ctx.editMessageText('⏳ Sending the request...');
+
+    try {
+        const config: AxiosRequestConfig = {
+            method,
+            url,
+            headers: headers || {},
+            timeout = 10000
+        };
+
+        if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+            config.data = JSON.parse('body');
+        }
+
+        const startTime = Date.now();
+        const response  = await axios(config);
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+
+        let responseText = `✅ *${method} ${url}*\n\n`;
+        responseText += `📊 Status: \`${response.status} ${response.statusText}\`\n`;
+        responseText += `⏱️ Time: \`${duration}ms\`\n\n`;
+
+        // Response headers
+        responseText += '📋 *Headers:*\n';
+        Object.entries(response.headers).forEach(([key, value]) => {
+          responseText += `\`${key}\`: ${value}\n`;
+        });
+    
+        responseText += '\n💾 *Body:*\n';
+        
+        let responseBody = '';
+        if (typeof response.data === 'object') {
+            responseBody = JSON.stringify(response.data, null, 2);
+        } else { 
+            responseBody = String(response.data)
+        }
 
 
+        if (responseBody.length > 3000) {
+            responseBody = responseBody.substring(0, 3000) + '\n\n...'
+        }
+        
+        ctx.editMessageText(responseText, {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([
+                [Markup.button.callback('🔄 New request', 'new_request')]
+            ])
+        })
+
+    } catch (error: any) {
+        let errorText = `❌ *REQUEST ERROR*\n\n`;
+        errorText += `🔗 URL: \`${url}\`\n`;
+        errorText += `📡 Method: \`${method}\`\n\n`;
+
+        if (error.response) {
+            errorText += `📊 Status: \`${error.response.status} ${error.response.statusText}\`\n`;
+            errorText += `💾 Error: \`${JSON.stringify(error.response.data)}\``;
+        } else if (error.request) {
+            errorText += `🔌 Network error: Connection timeout`;
+        } else {
+            errorText += `🐛 Error: \`${error.message}\``;
+        }
+
+        ctx.editMessageText(errorText, {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([
+            [Markup.button.callback('🔄 Новый запрос', 'new_request')]
+        ])
+        });
+    }
+})
 
 
+// New request
+bot.action('new_request', (ctx) => {
+  ctx.session = {}; // Сбрасываем сессию
+  
+  const keyboard = Markup.inlineKeyboard([
+    [
+      Markup.button.callback('GET', 'method_GET'),
+      Markup.button.callback('POST', 'method_POST'),
+      Markup.button.callback('PUT', 'method_PUT')
+    ],
+    [
+      Markup.button.callback('PATCH', 'method_PATCH'),
+      Markup.button.callback('DELETE', 'method_DELETE')
+    ]
+  ]);
+
+  ctx.editMessageText(
+    '🚀 *ApiRocket bot*\n\n' +
+    'Please select method for http request:',
+    { parse_mode: 'Markdown', ...keyboard }
+  );
+});
 
 
+// Show final menu
+function showFinalMenu(ctx: BotContext) {
+  const { method, url, headers, body } = ctx.session;
+  
+  let text = `🎯 *Ready for request:*\n\n`;
+  text += `📡 Method: \`${method}\`\n`;
+  text += `🔗 URL: \`${url}\`\n`;
+  
+  if (headers && Object.keys(headers).length > 0) {
+    text += `📋 Headers: \`${Object.keys(headers).length} \`\n`;
+  }
+  
+  if (body) {
+    text += `💾 Body: \`${body.length} characters\`\n`;
+  }
 
+  const keyboard = Markup.inlineKeyboard([
+    [
+      Markup.button.callback('📋 Add Headers', 'add_headers'),
+      Markup.button.callback('🚀 Send Request', 'send_request')
+    ],
+    [Markup.button.callback('🔄 New Request', 'new_request')]
+  ]);
 
+  ctx.reply(text, { parse_mode: 'Markdown', ...keyboard });
+}
 
 
 
