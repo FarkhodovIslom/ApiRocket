@@ -1,5 +1,6 @@
 import { Telegraf, Context, Markup } from "telegraf";
 import axios, { AxiosRequestConfig, Method} from "axios";
+import express from 'express';
 import dotenv from "dotenv";
 dotenv.config()
 
@@ -285,12 +286,18 @@ function showFinalMenu(ctx: BotContext) {
 }
 
 
+// Express server
+const app = express();
+app.get('/ping', (req, res) => res.send('pong'));
+app.listen(3000, () => {
+    console.log('💫 Server started on port 3000');
+    
+})
 
 // Start the bot 
 bot.launch();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
 
 console.log('🚀 ApiRocket launched')

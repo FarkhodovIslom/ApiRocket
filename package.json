@@ -18,7 +18,9 @@
     "tsc": "^2.0.4"
   },
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/node": "^24.0.13",
+    "express": "^5.1.0",
     "typescript": "^5.8.3"
   }
 }
