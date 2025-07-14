@@ -3,12 +3,14 @@ import axios, { AxiosRequestConfig, Method} from "axios";
 import dotenv from "dotenv";
 dotenv.config()
 
+
+
 interface SessionData {
     method?: Method,
     url?: string,
     headers?: Record<string, string>,
     body?: string,
-    step?: 'method' | 'url' | 'headers' | 'ready';
+    step?: 'method' | 'url' | 'body' | 'headers' | 'ready';
 }
 
 interface BotContext extends Context {
@@ -57,7 +59,7 @@ bot.command('start', (ctx, next) => {
 
 
 // Method processing
-bot.action(/Method_(.+)/, (ctx) => {
+bot.action(/method_(.+)/, (ctx) => {
     const method = ctx.match[1] as Method;
     ctx.session.method = method;
     ctx.session.step = 'url';
@@ -152,7 +154,7 @@ bot.action('add_headers', (ctx) => {
 bot.action('send_request', async (ctx) => {
     const { method, url, headers, body } = ctx.session;
 
-    if (method || !url) {
+    if (!method || !url) {
         ctx.reply('❌ Fill in all fields!');
         return;
     }
@@ -164,11 +166,11 @@ bot.action('send_request', async (ctx) => {
             method,
             url,
             headers: headers || {},
-            timeout = 10000
+            timeout: 10000
         };
 
         if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-            config.data = JSON.parse('body');
+            config.data = JSON.parse(body);
         }
 
         const startTime = Date.now();
@@ -284,12 +286,11 @@ function showFinalMenu(ctx: BotContext) {
 
 
 
+// Start the bot 
+bot.launch();
+
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 
-
-
-
-
-
-
-
+console.log('🚀 ApiRocket launched')
